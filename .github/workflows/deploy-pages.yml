@@ -1,0 +1,42 @@
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Enable Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Prepare static site
+        run: |
+          mkdir -p site
+          cp outputs/个人成长能力体系预览/index.html site/index.html
+          cp outputs/个人成长能力体系预览/enhancements.css site/
+          cp outputs/个人成长能力体系预览/growth-core.js site/
+          cp outputs/个人成长能力体系预览/enhancements.js site/
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
